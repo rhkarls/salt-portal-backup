@@ -29,6 +29,11 @@ pip install salt-portal-backup
 
 ### Usage
 
+## Building the pyinstaller exe
+
+```console
+pyinstaller backup.py --onefile --icon icon.ico
+```
 
 ## License
 
