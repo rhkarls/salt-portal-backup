@@ -1,0 +1,73 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "salt-portal-backup"
+dynamic = ["version"]
+description = 'Backup projects, stations, calibrations and measurements from Salt Portal to a SQLite database.'
+readme = "README.md"
+requires-python = ">=3.8"
+license = "BSD-3-Clause"
+keywords = []
+authors = [
+  { name = "Reinert Huseby Karlsen", email = "rhkarls@proton.me" },
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: Implementation :: CPython",
+  "Programming Language :: Python :: Implementation :: PyPy",
+]
+
+dependencies = [
+"sqlalchemy",
+"beautifulsoup4",
+"pandas",
+"numpy",
+"requests",
+"click",
+"tqdm"
+]
+
+[project.urls]
+Documentation = "https://github.com/rhkarls/salt-portal-backup#readme"
+Issues = "https://github.com/rhkarls/salt-portal-backup/issues"
+Source = "https://github.com/rhkarls/salt-portal-backup"
+
+[project.scripts]
+salt_portal_backup = "salt_portal_backup.backup:main"
+
+[tool.hatch.version]
+path = "src/salt_portal_backup/__about__.py"
+
+[tool.hatch.envs.types]
+extra-dependencies = [
+  "mypy>=1.0.0",
+]
+[tool.hatch.envs.types.scripts]
+check = "mypy --install-types --non-interactive {args:src/salt_portal_backup tests}"
+
+[tool.coverage.run]
+source_pkgs = ["salt_portal_backup", "tests"]
+branch = true
+parallel = true
+omit = [
+  "src/salt_portal_backup/__about__.py",
+]
+
+[tool.coverage.paths]
+salt_portal_backup = ["src/salt_portal_backup", "*/salt-portal-backup/src/salt_portal_backup"]
+tests = ["tests", "*/salt-portal-backup/tests"]
+
+[tool.coverage.report]
+exclude_lines = [
+  "no cov",
+  "if __name__ == .__main__.:",
+  "if TYPE_CHECKING:",
+]
