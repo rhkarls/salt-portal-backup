@@ -4,6 +4,7 @@
 
 import re
 from io import BytesIO
+from datetime import datetime
 
 from bs4 import BeautifulSoup as bs
 import pandas as pd
@@ -132,8 +133,15 @@ def get_station_calibrations(
                 calibration_id = int(match_upd.group(1))
 
                 html_calib_datetime = columns[0].string
+                                
                 # the html table does not round the time, just truncates the datetime str so
-                # e.g. 17:32:59 -> 17:32
+                # e.g. 17:32:59 -> 17:32, but also removes leading zeroes 09:00 -> 9:00
+                # format should be "%Y-%m-%d %H:%M", apart from the missing leading zeros.
+                # add leading zeroes to be able to compared with what is stored in the table
+                
+                html_calib_datetime = (datetime.strptime(html_calib_datetime, '%Y-%m-%d %H:%M')
+                                       .strftime('%Y-%m-%d %H:%M'))
+                
                 table_calib_datetime = calibrations.loc[i_row, "Date of Calibration"][
                     : len(html_calib_datetime)
                 ]
@@ -141,7 +149,9 @@ def get_station_calibrations(
                 if html_calib_datetime == table_calib_datetime:
                     calibrations.loc[i_row, "ID"] = calibration_id
                 else:
-                    raise Exception("Calibration id - no match on datetime")
+                    raise Exception(f"Calibration id - no match on datetime. "
+                                    f"Datetime from html {html_calib_datetime} not equal to "
+                                    f"datetime from csv table {table_calib_datetime}")
 
     return calibrations_csv.content, calibrations
 
