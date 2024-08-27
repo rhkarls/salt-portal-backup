@@ -202,7 +202,7 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-*.png
+# *.png
 
 *.tiff
 *.tif
