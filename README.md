@@ -106,7 +106,7 @@ pyinstaller src/salt_portal_backup/backup.py --onefile --name salt_portal_backup
 
 ## Database schema
 
-(coming)
+![erd_v1](static/salt_portal_db_v1.png)
 
 ## License
 
