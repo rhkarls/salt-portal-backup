@@ -36,7 +36,7 @@ from .database import (
 from sqlalchemy.orm import Session
 
 
-def run_backup(username, password, database_path):
+def run_backup(username, password, database_path=None):
 
     db_engine = initialize_database(database_name=database_path)
 
