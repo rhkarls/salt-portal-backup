@@ -140,18 +140,14 @@ class StationListRaw(Base):
 
 class MeasurementRaw(Base):
     __tablename__ = "measurement_raw"
-    station_id: Mapped[int] = mapped_column(
-        ForeignKey("station.id"), primary_key=True
-    )
+    station_id: Mapped[int] = mapped_column(ForeignKey("station.id"), primary_key=True)
     station: Mapped["Station"] = relationship(back_populates="measurements_raw")
     station_raw_measurement_data: Mapped[str] = mapped_column(TEXT)
 
 
 class CalibrationRaw(Base):
     __tablename__ = "calibration_raw"
-    station_id: Mapped[int] = mapped_column(
-        ForeignKey("station.id"), primary_key=True
-    )
+    station_id: Mapped[int] = mapped_column(ForeignKey("station.id"), primary_key=True)
     station: Mapped["Station"] = relationship(back_populates="calibrations_raw")
     station_raw_calibration_data: Mapped[str] = mapped_column(TEXT)
 
@@ -159,18 +155,22 @@ class CalibrationRaw(Base):
 def initialize_database(database_name: str = None) -> create_engine:
     if database_name is None:
         db_filename = "salt_portal_" + datetime.now().strftime("%Y%m%d_%H%M%S") + ".db"
-        database_name = str(Path.home() /  db_filename) # FIXME can we do create_engine without str concat?
-    
+        database_name = str(
+            Path.home() / db_filename
+        )  # FIXME can we do create_engine without str concat?
+
     if Path(database_name).exists():
-        print("Database file already exists. It is recommended to backup to a new database. "
-               "Proceed with existing database, possiblity leading to data loss of already existing data?")
+        print(
+            "Database file already exists. It is recommended to backup to a new database. "
+            "Proceed with existing database, possiblity leading to data loss of already existing data?"
+        )
         # TODO implement
-    
+
     db_engine = create_engine("sqlite:///" + database_name, echo=False)
 
     Base.metadata.drop_all(db_engine)
     Base.metadata.create_all(db_engine)
-    
-    print('Backup to ' + database_name)
+
+    print("Backup to " + database_name)
 
     return db_engine

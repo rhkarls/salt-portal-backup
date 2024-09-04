@@ -5,11 +5,12 @@
 
 -----
 
-Backup projects, stations, calibrations and measurements from Salt Portal to a SQLite database.
+Backup projects, stations, calibrations and measurements from the Fathom Scientific Salt Portal to a SQLite database.
 
 Disclaimer: This project is not affiliated, associated, authorized, endorsed by, or in any way 
 connected with Fathom Scientific Ltd, the provider of the Salt Portal.
 
+:exclamation: This package is at an early stage of development, the API and database schema are likely to change. Feedback and PRs welcome
 
 ## Table of Contents
 
@@ -97,6 +98,12 @@ Backup to C:\Users\myusername\salt_portal_20240826_135932.db
  station in project:  12%|███████▉                                                       | 1/8 [00:01<00:11,  1.66s/it]
  measurement at station:  34%|███████████████████▍                                     | 17/50 [00:10<00:16,  1.96it/s]
 ```
+
+## Limitations
+
+- Rating curves are currently not stored in the backup database
+- Information on upstream probes is partially missing (i.e. not marked as upstream probe, group often missing, 
+no info on probe used in which calculations)
 
 ## Building the pyinstaller exe
 

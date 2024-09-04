@@ -8,6 +8,7 @@ from datetime import datetime
 
 from bs4 import BeautifulSoup as bs
 import pandas as pd
+
 # import polars as pl
 import numpy as np
 
@@ -62,9 +63,8 @@ def login_salt_portal(s_request, session_token, username, password):
 
 
 def get_projects_stations(s_request, header_organization):
-    """ Retrieve the station csv file from SP, which also contains project information
-    """
-    
+    """Retrieve the station csv file from SP, which also contains project information"""
+
     header_organization["Referer"] = "https://wit.fathomscientific.com/"
     station_csv = s_request.get(
         "https://wit.fathomscientific.com/station-cfts/", headers=header_organization
@@ -73,7 +73,7 @@ def get_projects_stations(s_request, header_organization):
     station_csv_header = b"station_name,station_id,project_name,project_id,cft_1,cft_2,cft_3\r\n"
     stations = pd.read_csv(BytesIO(station_csv_header + station_csv.content))
     # stations_pl = pl.read_csv(BytesIO(station_csv_header + station_csv.content))
-   
+
     projects = stations[["project_name", "project_id"]].drop_duplicates()
     # projects_pl = stations_pl[["project_name", "project_id"]].unique()
 
@@ -83,8 +83,7 @@ def get_projects_stations(s_request, header_organization):
 def get_station_data(
     s_request, project_id, station_id, header_station_measurements, header_station_page
 ):
-    """ Retrieve measurement and calibration info and data for a specific station
-    """
+    """Retrieve measurement and calibration info and data for a specific station"""
 
     calibrations_csv, calibrations = get_station_calibrations(
         s_request, project_id, station_id, header_station_measurements, header_station_page
@@ -110,7 +109,7 @@ def get_station_calibrations(
     if calibrations.size == 0:
         return calibrations_csv.content, calibrations
 
-    # get calibration id, insert to calibrations dataframe 
+    # get calibration id, insert to calibrations dataframe
     # matching on order and datetime intead. If this causes problems and raises
     # the Exception below, also include match on filename.
     calibrations["ID"] = pd.array([pd.NA] * calibrations.shape[0], dtype="Int64")
@@ -133,15 +132,16 @@ def get_station_calibrations(
                 calibration_id = int(match_upd.group(1))
 
                 html_calib_datetime = columns[0].string
-                                
+
                 # the html table does not round the time, just truncates the datetime str so
                 # e.g. 17:32:59 -> 17:32, but also removes leading zeroes 09:00 -> 9:00
                 # format should be "%Y-%m-%d %H:%M", apart from the missing leading zeros.
                 # add leading zeroes to be able to compared with what is stored in the table
-                
-                html_calib_datetime = (datetime.strptime(html_calib_datetime, '%Y-%m-%d %H:%M')
-                                       .strftime('%Y-%m-%d %H:%M'))
-                
+
+                html_calib_datetime = datetime.strptime(
+                    html_calib_datetime, "%Y-%m-%d %H:%M"
+                ).strftime("%Y-%m-%d %H:%M")
+
                 table_calib_datetime = calibrations.loc[i_row, "Date of Calibration"][
                     : len(html_calib_datetime)
                 ]
@@ -149,9 +149,11 @@ def get_station_calibrations(
                 if html_calib_datetime == table_calib_datetime:
                     calibrations.loc[i_row, "ID"] = calibration_id
                 else:
-                    raise Exception(f"Calibration id - no match on datetime. "
-                                    f"Datetime from html {html_calib_datetime} not equal to "
-                                    f"datetime from csv table {table_calib_datetime}")
+                    raise Exception(
+                        f"Calibration id - no match on datetime. "
+                        f"Datetime from html {html_calib_datetime} not equal to "
+                        f"datetime from csv table {table_calib_datetime}"
+                    )
 
     return calibrations_csv.content, calibrations
 

@@ -9,10 +9,14 @@ from salt_portal_backup.__about__ import __version__
 
 
 @click.command(
-    help=(
-        "Backup projects, stations, calibrations and measurements from Salt Portal "
-        "to a SQLite database."
-    )
+    help="""
+    Backup projects, stations, calibrations and measurements from Salt Portal 
+    to a SQLite database.
+    \b
+    
+    BSD-3-Clause License\n
+    Copyright (c) 2024-present Reinert Huseby Karlsen <rhkarls@proton.me>
+    """
 )
 @click.option(
     "-u",
