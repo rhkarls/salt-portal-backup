@@ -37,7 +37,7 @@ from salt_portal_backup.__about__ import __version__
     default=None,
     help=(
         "Path to the SQLite database to store the backup in. The database is created if not "
-        "excisting, and it is recommended to use a new database for each backup. "
+        "existing, and it is recommended to use a new database for each backup. "
         "If not provided, the database will be created in the users home folder and named with "
         "the current date and time time."
     ),
