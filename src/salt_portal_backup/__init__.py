@@ -10,4 +10,3 @@ except PackageNotFoundError:
     __version__ = "unknown"
 
 from .salt_portal import run_backup as run_backup
-

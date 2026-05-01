@@ -47,7 +47,9 @@ class Measurement(Base):
     measurement_id: Mapped[int] = mapped_column(primary_key=True)
     station_id: Mapped[int] = mapped_column(ForeignKey("station.id"))
     station: Mapped["Station"] = relationship(back_populates="measurements")
-    group_id: Mapped[int] = mapped_column(ForeignKey("measurement_group.id"), nullable=True)
+    group_id: Mapped[int] = mapped_column(
+        ForeignKey("measurement_group.id"), nullable=True
+    )
     group: Mapped["MeasurementGroup"] = relationship(back_populates="measurements")
     datetime_start: Mapped[str] = mapped_column(TEXT)
     datetime_end: Mapped[str] = mapped_column(TEXT)
@@ -73,7 +75,7 @@ class Measurement(Base):
     sd_file_id: Mapped[int] = mapped_column(nullable=True)
     sdiq_mass_nacl_kg: Mapped[float] = mapped_column(nullable=True)
     sdiq_cft: Mapped[float] = mapped_column(nullable=True)
-    #states: Mapped[str] = mapped_column(TEXT, nullable=True)
+    # states: Mapped[str] = mapped_column(TEXT, nullable=True)
     csv_data: Mapped["MeasurementCSVData"] = relationship(back_populates="measurement")
 
 
@@ -168,7 +170,9 @@ def initialize_database(database_name: str = None) -> sqlalchemy.Engine:
         )  # FIXME can we do create_engine without str concat?
 
     elif Path(database_name).exists():
-        raise NotImplementedError("Database file already exists. Backup to existing database is not implemented yet.")
+        raise NotImplementedError(
+            "Database file already exists. Backup to existing database is not implemented yet."
+        )
         print(
             "Database file already exists. It is recommended to backup to a new database. "
             "Proceed with existing database, possibly leading to data loss of already existing data?"
