@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "salt-portal-backup"
-dynamic = ["version"]
+version = "0.2.0"
 description = 'Backup projects, stations, calibrations and measurements from Salt Portal to a SQLite database.'
 readme = "README.md"
 requires-python = ">=3.11"
