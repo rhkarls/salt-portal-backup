@@ -10,13 +10,7 @@ import requests
 import numpy as np
 from tqdm import tqdm
 
-from .web_scraping import URL_LOGIN, header_data_template
-from .web_scraping import (
-    login_salt_portal,
-    get_projects_stations,
-    get_station_data,
-    get_station_groups,
-)
+from salt_portal_backup import __version__ as spb_version
 
 from .database import initialize_database, DATABASE_VERSION
 from .database import (
@@ -33,7 +27,7 @@ from .database import (
     Version,
 )
 
-from sqlalchemy.orm import Session
+SUPPORTED_SP_VERSION = "1.0.2"
 
 
 def run_backup(username, password, database_path=None):
@@ -55,12 +49,22 @@ def run_backup(username, password, database_path=None):
         full_version_tag = html_sidenav.find("p", string=re.compile("Salt Portal "))
         sp_semver = full_version_tag.text.strip().lstrip("Salt Portal ")
 
+        if sp_semver != SUPPORTED_SP_VERSION:
+            warnings.warn(f"The current version of Salt Portal Backup that you are using (package version {spb_version}), is not "
+                          f"tested against the Salt Portal version that is currently live on the interweb ({sp_semver}). This may cause issues "
+                          f"with the backup, as the data schema may change. Supported "
+                          f"Salt Portal version is {SUPPORTED_SP_VERSION}."
+                          f"\n\nPlease check for updates of the Salt Portal Backup package, "
+                          f"and if no updates are available please submit an issue at https://github.com/rhkarls/salt-portal-backup/issues "
+                          f"and include the versions printed in this message.", stacklevel=2)
+
         db_version = Version(
             id=0,
             database_version=DATABASE_VERSION,
             salt_portal_version=sp_semver,
             datetime_created=datetime.datetime.now(datetime.UTC).isoformat(timespec="seconds"),
             created_by_user=username,
+            salt_portal_backup_version=spb_version,
         )
 
         s_db.add(db_version)
@@ -88,7 +92,7 @@ def run_backup(username, password, database_path=None):
             project_name = project["project_name"]
             project_id = project["project_id"]
 
-            project_insert = Project(**{"id": project_id, "name": project_name})
+            project_insert = Project(**{"id": project_id, "project_name": project_name})
 
             s_db.add(project_insert)
             s_db.commit()
@@ -147,11 +151,12 @@ def run_backup(username, password, database_path=None):
 
                     measurement_insert = Measurement(
                         **{
-                            "id": md["ID"],
+                            "measurement_id": md["ID"],
                             "station_id": station_id,
                             "group_id": md["group"],
-                            "datetime": md["Date of Q Measurement"],
+                            "datetime_start": md["Date of Q Measurement"],
                             "datetime_end": md["End time of Q Measurement"],
+                            "upstream_probe": md["IsUpstream"],
                             "flow_cms": md["Flow (cms)"],
                             "uncertainty_percent": md["Measurement Uncertainty"],
                             "notes": md["Notes"],
@@ -167,8 +172,12 @@ def run_backup(username, password, database_path=None):
                             "ref_stage_m": md["Ref Stage (m)"],
                             "type": md["Type"],
                             "filename": md["Filename"],
-                            "rating_curve_ids": md["RatingCurveIds"],
-                            "states": md["States"],
+                            "sd_file_id": md["SDFile_ID"],
+                            "sdiq_mass_nacl_kg": md["SDIQ - Mass NaCl"],
+                            "sdiq_cft": md["SDIQ - CFT"],
+                            "channel_name": md["Channel Name"],
+                            "rating_curve_ids": md["Rating Curve ID"],
+                            "probe_serial_number": md["Probe Serial Number"],
                         }
                     )
                     measurement_csv_insert = MeasurementCSVData(

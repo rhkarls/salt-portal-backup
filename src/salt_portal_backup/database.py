@@ -2,25 +2,17 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-"""
-TODO: control schema against .sql
-"""
-
 from datetime import datetime
 from pathlib import Path
 
-from sqlalchemy.orm import relationship
-
-from sqlalchemy import ForeignKey, CheckConstraint
-from sqlalchemy import create_engine
+import sqlalchemy
+from sqlalchemy import CheckConstraint, ForeignKey, create_engine
 from sqlalchemy.dialects.sqlite import (
     TEXT,
 )  # not strictly necessary since sqlite use type affinity, but makes the type explicit
-from sqlalchemy.orm import DeclarativeBase
-from sqlalchemy.orm import Mapped
-from sqlalchemy.orm import mapped_column
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
-DATABASE_VERSION = 1
+DATABASE_VERSION = 2
 
 
 class Base(DeclarativeBase): ...
@@ -46,19 +38,20 @@ class Station(Base):
 class Project(Base):
     __tablename__ = "project"
     id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str] = mapped_column(TEXT)
+    project_name: Mapped[str] = mapped_column(TEXT)
     stations: Mapped["Station"] = relationship(back_populates="project")
 
 
 class Measurement(Base):
     __tablename__ = "measurement"
-    id: Mapped[int] = mapped_column(primary_key=True)
+    measurement_id: Mapped[int] = mapped_column(primary_key=True)
     station_id: Mapped[int] = mapped_column(ForeignKey("station.id"))
     station: Mapped["Station"] = relationship(back_populates="measurements")
     group_id: Mapped[int] = mapped_column(ForeignKey("measurement_group.id"), nullable=True)
     group: Mapped["MeasurementGroup"] = relationship(back_populates="measurements")
-    datetime: Mapped[str] = mapped_column(TEXT)
+    datetime_start: Mapped[str] = mapped_column(TEXT)
     datetime_end: Mapped[str] = mapped_column(TEXT)
+    upstream_probe: Mapped[bool] = mapped_column()
     flow_cms: Mapped[float] = mapped_column()
     uncertainty_percent: Mapped[float] = mapped_column()
     notes: Mapped[str] = mapped_column(TEXT, nullable=True)
@@ -74,15 +67,20 @@ class Measurement(Base):
     ref_stage_m: Mapped[float] = mapped_column(nullable=True)
     type: Mapped[str] = mapped_column(TEXT, nullable=True)
     filename: Mapped[str] = mapped_column(TEXT)
+    channel_name: Mapped[str] = mapped_column(TEXT, nullable=True)
     rating_curve_ids: Mapped[str] = mapped_column(TEXT, nullable=True)
-    states: Mapped[str] = mapped_column(TEXT, nullable=True)
+    probe_serial_number: Mapped[str] = mapped_column(TEXT, nullable=True)
+    sd_file_id: Mapped[int] = mapped_column(nullable=True)
+    sdiq_mass_nacl_kg: Mapped[float] = mapped_column(nullable=True)
+    sdiq_cft: Mapped[float] = mapped_column(nullable=True)
+    #states: Mapped[str] = mapped_column(TEXT, nullable=True)
     csv_data: Mapped["MeasurementCSVData"] = relationship(back_populates="measurement")
 
 
 class MeasurementCSVData(Base):
     __tablename__ = "measurement_csv_data"
     measurement_id: Mapped[int] = mapped_column(
-        ForeignKey("measurement.id"), primary_key=True
+        ForeignKey("measurement.measurement_id"), primary_key=True
     )  # Should be 1-to-1, TODO OK? better to use separate id to make sure?
     measurement: Mapped["Measurement"] = relationship(back_populates="csv_data")
     csv_data: Mapped[str] = mapped_column(TEXT)
@@ -121,6 +119,7 @@ class Version(Base):
     id: Mapped[int] = mapped_column(CheckConstraint("id = 0"), primary_key=True)
     database_version: Mapped[int] = mapped_column()
     salt_portal_version: Mapped[str] = mapped_column(TEXT)
+    salt_portal_backup_version: Mapped[str] = mapped_column(TEXT)
     datetime_created: Mapped[str] = mapped_column(TEXT)
     created_by_user: Mapped[str] = mapped_column(TEXT)
 
@@ -152,17 +151,27 @@ class CalibrationRaw(Base):
     station_raw_calibration_data: Mapped[str] = mapped_column(TEXT)
 
 
-def initialize_database(database_name: str = None) -> create_engine:
+def initialize_database(database_name: str = None) -> sqlalchemy.Engine:
+    """Initialize the SQLite database for the backup.
+
+    If a database name is provided, it will be used, otherwise a new database will be
+    created in the users home folder with a name based on the current date and time.
+
+    If a database with the provided name already exists, a warning is printed and the
+    existing database is used (TODO implement).
+    """
+
     if database_name is None:
         db_filename = "salt_portal_" + datetime.now().strftime("%Y%m%d_%H%M%S") + ".db"
         database_name = str(
             Path.home() / db_filename
         )  # FIXME can we do create_engine without str concat?
 
-    if Path(database_name).exists():
+    elif Path(database_name).exists():
+        raise NotImplementedError("Database file already exists. Backup to existing database is not implemented yet.")
         print(
             "Database file already exists. It is recommended to backup to a new database. "
-            "Proceed with existing database, possiblity leading to data loss of already existing data?"
+            "Proceed with existing database, possibly leading to data loss of already existing data?"
         )
         # TODO implement
 
