@@ -29,8 +29,16 @@ from .database import (
 
 SUPPORTED_SP_VERSION = "1.0.2"
 
+DESC_WIDTH = 34
 
-def run_backup(username, password, database_path=None):
+def _fmt_desc(text: str, width: int = DESC_WIDTH) -> str:
+    if len(text) > width:
+        text = text[:width - 1] + "…"
+    return text.ljust(width)
+
+def run_backup(username: str,
+               password: str,
+               database_path: str | Path | None = None):
 
     db_engine = initialize_database(database_name=database_path)
 
@@ -86,10 +94,12 @@ def run_backup(username, password, database_path=None):
         header_station_measurements = header_data_template.copy()
         header_station_page = header_data_template.copy()
 
-        for _, project in tqdm(
-            projects.iterrows(), desc=" projects", total=projects.shape[0], position=0
-        ):
+        projects_iter = tqdm(projects.iterrows(),
+                             total=projects.shape[0],
+                             position=0)
+        for _, project in projects_iter:
             project_name = project["project_name"]
+            projects_iter.set_description(_fmt_desc(f" project ({project_name})"))
             project_id = project["project_id"]
 
             project_insert = Project(**{"id": project_id, "project_name": project_name})
@@ -99,14 +109,13 @@ def run_backup(username, password, database_path=None):
 
             stations_in_project = stations[stations["project_id"] == project_id]
 
-            for _, station in tqdm(
-                stations_in_project.iterrows(),
-                desc=" station in project",
-                total=stations_in_project.shape[0],
-                leave=False,
-                position=1,
-            ):
+            stations_iter = tqdm(stations_in_project.iterrows(),
+                                 total=stations_in_project.shape[0],
+                                 position=1,
+                                 leave=False)
+            for _, station in stations_iter:
                 station_name = station["station_name"]
+                stations_iter.set_description(_fmt_desc(f" station ({station_name})"))
                 station_id = station["station_id"]
 
                 header_station_measurements["Referer"] = (
@@ -140,7 +149,7 @@ def run_backup(username, password, database_path=None):
                 # download and insert each measurement_data_csv in corresponding table
                 for mi, md in tqdm(
                     measurements.iterrows(),
-                    desc=" measurement at station",
+                    desc=_fmt_desc(" measurement at station"),
                     total=measurements.shape[0],
                     leave=False,
                     position=2,
