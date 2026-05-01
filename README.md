@@ -23,13 +23,28 @@ connected with Fathom Scientific Ltd, the provider of the Salt Portal.
 - [Database schema](#database-schema)
 - [License](#license)
 
-## Installation as package
+## Installation
 
+The recommended way to install the package is using [uv](https://docs.astral.sh/uv/).
+
+As a standalone CLI tool (isolated environment, globally available):
+```console
+uv tool install salt-portal-backup
+```
+
+After installing with uv tool install, the CLI command is available globally without activating any virtual environment.
+
+The package can be installed in your current python environment using uv with:
+```console
+uv add salt-portal-backup
+```
+
+or, if you want to install it in your current python environment using pip:
 ```console
 pip install salt-portal-backup
 ```
 
-### Usage in python code
+### Usage in Python code
 
 ```python
 from salt_portal_backup import run_backup
@@ -49,11 +64,13 @@ run_backup(username='myusername', password='mypassword',
 
 ### Usage as CLI
 
-Run in the environment where salt-portal-backup is installed:
+Run:
 
 ```console
-python -m salt_portal_backup.backup --help
+salt_portal_backup --help
 ```
+
+Remember to activate the virtual environment where you installed the package if not installing globally with `uv tool install`.
 
 ## Download Windows executable
 
@@ -61,7 +78,7 @@ A windows stand-alone executable made with pyinstaller is available under [Relea
 
 ### Usage CLI
 
-Interaction with the CLI is the same was when calling the python script.
+Interaction with the CLI is the same as when calling the python script.
 
 ```console
 salt_portal_backup.exe --help
@@ -94,26 +111,20 @@ salt_portal_backup.exe
 Salt Portal username: myusername
 Salt Portal password: (input is hidden)
 Backup to C:\Users\myusername\salt_portal_20240826_135932.db
- projects:  33%|████████████████████████▎                                                | 3/9 [01:25<02:31, 25.22s/it]
- station in project:  12%|███████▉                                                       | 1/8 [00:01<00:11,  1.66s/it]
+ project (project name):  33%|████████████████████████▎                                                | 3/9 [01:25<02:31, 25.22s/it]
+ station (station name):  12%|███████▉                                                       | 1/8 [00:01<00:11,  1.66s/it]
  measurement at station:  34%|███████████████████▍                                     | 17/50 [00:10<00:16,  1.96it/s]
 ```
 
 ## Limitations
 
-- Rating curves are currently not stored in the backup database
-- Information on upstream probes is partially missing (i.e. not marked as upstream probe, group often missing, 
-no info on probe used in which calculations)
+- Rating curves are currently not stored in the backup database, but this is planned for a future release.
 
 ## Building the pyinstaller exe
 
 ```console
 pyinstaller src/salt_portal_backup/backup.py --onefile --name salt_portal_backup --icon static/icon-256.ico
 ```
-
-## Database schema
-
-![erd_v1](static/salt_portal_db_v1.png)
 
 ## License
 

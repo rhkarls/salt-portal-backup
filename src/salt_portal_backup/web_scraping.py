@@ -3,14 +3,12 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 import re
-from io import BytesIO
 from datetime import datetime
+from io import BytesIO
 
-from bs4 import BeautifulSoup as bs
-import pandas as pd
-
-# import polars as pl
 import numpy as np
+import pandas as pd
+from bs4 import BeautifulSoup as bs
 
 URL_LOGIN = "https://wit.fathomscientific.com/accounts/login/"
 
@@ -70,7 +68,9 @@ def get_projects_stations(s_request, header_organization):
         "https://wit.fathomscientific.com/station-cfts/", headers=header_organization
     )
 
-    station_csv_header = b"station_name,station_id,project_name,project_id,cft_1,cft_2,cft_3\r\n"
+    station_csv_header = (
+        b"station_name,station_id,project_name,project_id,cft_1,cft_2,cft_3\r\n"
+    )
     stations = pd.read_csv(BytesIO(station_csv_header + station_csv.content))
     # stations_pl = pl.read_csv(BytesIO(station_csv_header + station_csv.content))
 
@@ -86,10 +86,18 @@ def get_station_data(
     """Retrieve measurement and calibration info and data for a specific station"""
 
     calibrations_csv, calibrations = get_station_calibrations(
-        s_request, project_id, station_id, header_station_measurements, header_station_page
+        s_request,
+        project_id,
+        station_id,
+        header_station_measurements,
+        header_station_page,
     )
     measurements_csv, measurements = get_station_measurements(
-        s_request, project_id, station_id, header_station_measurements, header_station_page
+        s_request,
+        project_id,
+        station_id,
+        header_station_measurements,
+        header_station_page,
     )
 
     return measurements_csv, measurements, calibrations_csv, calibrations
@@ -114,10 +122,13 @@ def get_station_calibrations(
     # the Exception below, also include match on filename.
     calibrations["ID"] = pd.array([pd.NA] * calibrations.shape[0], dtype="Int64")
 
-    header_station_page["Referer"] = f"https://wit.fathomscientific.com/project/{project_id}/"
+    header_station_page["Referer"] = (
+        f"https://wit.fathomscientific.com/project/{project_id}/"
+    )
 
     station_page_get = s_request.get(
-        f"https://wit.fathomscientific.com/station/{station_id}/", headers=header_station_page
+        f"https://wit.fathomscientific.com/station/{station_id}/",
+        headers=header_station_page,
     )
 
     station_html = bs(station_page_get.text, "html.parser")
@@ -172,10 +183,13 @@ def get_station_measurements(
     download_base = "https://wit.fathomscientific.com"
     measurements["download_link"] = None
 
-    header_station_page["Referer"] = f"https://wit.fathomscientific.com/project/{project_id}/"
+    header_station_page["Referer"] = (
+        f"https://wit.fathomscientific.com/project/{project_id}/"
+    )
 
     station_page_get = s_request.get(
-        f"https://wit.fathomscientific.com/station/{station_id}/", headers=header_station_page
+        f"https://wit.fathomscientific.com/station/{station_id}/",
+        headers=header_station_page,
     )
 
     station_html = bs(station_page_get.text, "html.parser")
@@ -195,12 +209,14 @@ def get_station_measurements(
                     if "download" in td_link["href"]:
                         csv_dl_partial_link = td_link["href"]
 
-                        match = re.search(r"/measurement/(\d+)/update", td_links[0]["href"])
+                        match = re.search(
+                            r"/measurement/(\d+)/update", td_links[0]["href"]
+                        )
                         measurement_id = int(match.group(1))
 
-                        measurements.loc[measurements["ID"] == measurement_id, "download_link"] = (
-                            download_base + csv_dl_partial_link
-                        )
+                        measurements.loc[
+                            measurements["ID"] == measurement_id, "download_link"
+                        ] = download_base + csv_dl_partial_link
 
     return measurements_csv.content, measurements
 
@@ -208,7 +224,9 @@ def get_station_measurements(
 def get_station_groups(s, header_station_measurements, measurements):
     groups = [int(x) for x in set(measurements["group"]) if ~np.isnan(x)]
     for group in groups:
-        group_csv_link = f"https://wit.fathomscientific.com/group-measurement/{group}/csv-download"
+        group_csv_link = (
+            f"https://wit.fathomscientific.com/group-measurement/{group}/csv-download"
+        )
         group_csv_data = s.get(group_csv_link, headers=header_station_measurements)
 
     # don't need the dataframe where, csv data is not returned with a fixed strucutre

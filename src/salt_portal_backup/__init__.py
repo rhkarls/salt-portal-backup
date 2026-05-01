@@ -2,4 +2,11 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-from .salt_portal import run_backup
+from importlib.metadata import PackageNotFoundError, version
+
+try:
+    __version__ = version("salt-portal-backup")
+except PackageNotFoundError:
+    __version__ = "unknown"
+
+from .salt_portal import run_backup as run_backup

@@ -4,10 +4,10 @@ build-backend = "hatchling.build"
 
 [project]
 name = "salt-portal-backup"
-dynamic = ["version"]
+version = "0.2.0"
 description = 'Backup projects, stations, calibrations and measurements from Salt Portal to a SQLite database.'
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.11"
 license = "BSD-3-Clause"
 keywords = []
 authors = [
@@ -16,23 +16,22 @@ authors = [
 classifiers = [
   "Development Status :: 4 - Beta",
   "Programming Language :: Python",
-  "Programming Language :: Python :: 3.9",
-  "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
   "Programming Language :: Python :: Implementation :: CPython",
   "Programming Language :: Python :: Implementation :: PyPy",
 ]
 
 dependencies = [
-"sqlalchemy",
-"beautifulsoup4",
-"pandas",
-"numpy",
-"requests",
-"click",
-"tqdm"
+    "sqlalchemy>=2.0.37",
+    "beautifulsoup4>=4.14.0",
+    "pandas>=3.0.0",
+    "numpy>=2.4.0",
+    "requests>=2.32.3",
+    "click>=8.3.0",
+    "tqdm>=4.67.1"
 ]
 
 [project.urls]
@@ -43,38 +42,40 @@ Source = "https://github.com/rhkarls/salt-portal-backup"
 [project.scripts]
 salt_portal_backup = "salt_portal_backup.backup:main"
 
-[tool.hatch.version]
-path = "src/salt_portal_backup/__about__.py"
-
-[tool.hatch.envs.types]
-extra-dependencies = [
-  "mypy>=1.0.0",
+[tool.ruff]
+line-length = 88
+lint.select = [
+  "B", # flake8-bugbear rules
+  "E", # pycodestyle error rules
+  "F", # pyflakes rules
+  "I", # isort rules
+  "W", # pycodestyle warning rules
 ]
-[tool.hatch.envs.types.scripts]
-check = "mypy --install-types --non-interactive {args:src/salt_portal_backup tests}"
-
-[tool.coverage.run]
-source_pkgs = ["salt_portal_backup", "tests"]
-branch = true
-parallel = true
-omit = [
-  "src/salt_portal_backup/__about__.py",
+lint.ignore = [
+  "E501", # line-too-long
 ]
 
-[tool.coverage.paths]
-salt_portal_backup = ["src/salt_portal_backup", "*/salt-portal-backup/src/salt_portal_backup"]
-tests = ["tests", "*/salt-portal-backup/tests"]
+[tool.uv]
+default-groups = [ "dev"]
 
-[tool.coverage.report]
-exclude_lines = [
-  "no cov",
-  "if __name__ == .__main__.:",
-  "if TYPE_CHECKING:",
+[tool.numpydoc_validation]
+checks = [
+  "all",  # report on all checks
+  "ES01", # but don't require an extended summary
+  "EX01", # or examples
+  "SA01", # or a see also section
+  "SS06", # and don't require the summary to fit on one line
+]
+exclude = [ # don't report on checks for these
+  '\\.__init__$',
+  '\\.__repr__$',
+  '\\.__str__$',
 ]
 
 [dependency-groups]
 dev = [
-    "build>=1.2.2.post1",
-    "pyinstaller>=6.11.1",
-    "twine>=6.0.1",
+    "build>=1.4.3",
+    "pyinstaller>=6.19.0",
+    "ruff>=0.15.11",
+    "twine>=6.2.0",
 ]
