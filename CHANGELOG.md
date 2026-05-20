@@ -1,10 +1,10 @@
 # Changelog
 
-[0.2.0] - Unreleased
+[0.2.0] - 2026-05-01
 - Add support for python 3.14
 - Drop support for python 3.9 and 3.10
 - Update to support salt portal 1.0.2
-- Update database schema to version 2 to support new outputs from salt portal. Most importantly:
+- Update the database schema to version 2 to support new outputs from salt portal. Most importantly:
   - Flag for upstream probes
   - Mass of salt and cft used per measurement
 - Update dependencies

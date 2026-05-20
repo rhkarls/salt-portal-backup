@@ -5,7 +5,9 @@
 
 -----
 
-Backup projects, stations, calibrations and measurements from the Fathom Scientific Salt Portal to a SQLite database.
+Backup projects, stations, calibrations, and measurements from the Fathom Scientific Salt Portal to a SQLite database.
+
+Backups serve as data security, offline access, and can be useful for creating custom reports and meta analysis of salt dilution measurements.
 
 Disclaimer: This project is not affiliated, associated, authorized, endorsed by, or in any way 
 connected with Fathom Scientific Ltd, the provider of the Salt Portal.
@@ -33,6 +35,11 @@ uv tool install salt-portal-backup
 ```
 
 After installing with uv tool install, the CLI command is available globally without activating any virtual environment.
+
+To update using `uv tool`, run:
+```console
+uv tool upgrade salt-portal-backup
+```
 
 The package can be installed in your current python environment using uv with:
 ```console
