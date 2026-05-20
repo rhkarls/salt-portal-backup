@@ -57,6 +57,7 @@ lint.ignore = [
 
 [tool.uv]
 default-groups = [ "dev"]
+exclude-newer = "15 days"
 
 [tool.numpydoc_validation]
 checks = [
