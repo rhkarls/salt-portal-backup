@@ -61,17 +61,41 @@ def run_backup(username: str, password: str, database_path: str | Path | None = 
         login_res = login_salt_portal(s_request, token, username, password)
 
         html_main_page = bs(login_res.text, "html.parser")
-        if (
-            html_main_page.find("li", string=re.compile("Successfully signed in"))
-            is None
-        ):
-            raise Exception("Login failed")
+
+        # SP returns 200 even if the login fails
+        # so we need to check the html for login errors or if we are still on the login page
+        # we also check if html_sidenav is present, which is only present on the authenticated page currently
+        # all of these checks are weak since the login page and behavior of SP can change
+        login_error = html_main_page.select_one(".auth-form-errors .errorlist")
+        if login_error is not None:
+            error_message = login_error.get_text(" ", strip=True)
+            raise Exception(f"Login failed: {error_message}")
+
+        login_form = html_main_page.select_one('form[action="/accounts/login/"]')
+        password_input = html_main_page.select_one('input[name="login-password"]')
+        if login_form is not None or password_input is not None:
+            raise Exception("Login failed: still on login page")
 
         html_sidenav = html_main_page.find("div", class_="wh-sidenav-content")
+        if html_sidenav is None:
+            raise Exception("Login failed: authenticated page not detected")
         full_version_tag = html_sidenav.find("p", string=re.compile("Salt Portal "))
-        sp_semver = full_version_tag.text.strip().removeprefix("Salt Portal ")
+        try:
+            sp_semver = full_version_tag.text.strip().removeprefix("Salt Portal ")
+        except AttributeError:
+            sp_semver = (
+                ""  # empty string instead of None, else it fails on db insert later
+            )
 
-        if sp_semver != SUPPORTED_SP_VERSION:
+        if sp_semver == "":
+            warnings.warn(
+                "Unable to parse Salt Portal version number.\n"
+                "This may indicate authentication issues or that the Salt Portal website "
+                "has changed. Please report at https://github.com/rhkarls/salt-portal-backup/issues "
+                "if backup does not work.",
+                stacklevel=2,
+            )
+        elif sp_semver != SUPPORTED_SP_VERSION:
             warnings.warn(
                 f"The current version of Salt Portal Backup that you are using (package version {spb_version}), is not "
                 f"tested against the Salt Portal version that is currently live on the interweb ({sp_semver}). This may cause issues "

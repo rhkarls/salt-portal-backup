@@ -50,11 +50,12 @@ header_data_template = {
 
 def login_salt_portal(s_request, session_token, username, password):
     header_login["Cookie"] = header_login["Cookie"].format(token=session_token)
+
     login_payload = {
-        "_method": "login",
+        "intent": "login",
         "csrfmiddlewaretoken": session_token,
-        "login": username,
-        "password": password,
+        "login-identifier": username,
+        "login-password": password,
         "next": "/",
     }
     return s_request.post(URL_LOGIN, data=login_payload, headers=header_login)
