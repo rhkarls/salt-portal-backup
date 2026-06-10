@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "salt-portal-backup"
-version = "0.2.0"
+version = "0.2.1"
 description = 'Backup projects, stations, calibrations and measurements from Salt Portal to a SQLite database.'
 readme = "README.md"
 requires-python = ">=3.11"
@@ -79,4 +79,5 @@ dev = [
     "pyinstaller>=6.19.0",
     "ruff>=0.15.11",
     "twine>=6.2.0",
+    "pyrefly>=0.60.0"
 ]
