@@ -1,5 +1,13 @@
 # Changelog
 
+[0.2.2] - 2026-09-24
+- Update to support salt portal 1.5.0
+- Update dependencies
+- Fix bug with newer version of salt portal (1.5.0) which changed timestamp format in html tables
+
+[0.2.1] - 2026-06-10
+- Fix bug with newer version of salt portal (1.0.2) which changed header names in exported measurement data
+
 [0.2.0] - 2026-05-01
 - Add support for python 3.14
 - Drop support for python 3.9 and 3.10
