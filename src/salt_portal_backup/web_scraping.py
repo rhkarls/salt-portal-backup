@@ -135,6 +135,9 @@ def get_station_calibrations(
     station_html = bs(station_page_get.text, "html.parser")
 
     table_2 = station_html.find("table", id="table_2")
+    tz_header_station = table_2.find("th").get_text().strip()
+    tz_match_station = re.search(r"\((.*?)\)", tz_header_station)
+    tz_name_station = tz_match_station.group(1) if tz_match_station else None
     for i_row, row in enumerate(table_2.tbody.find_all("tr")):
         columns = row.find_all("td")
         for td in columns:
@@ -150,15 +153,18 @@ def get_station_calibrations(
                 # format should be "%Y-%m-%d %H:%M", apart from the missing leading zeros.
                 # add leading zeroes to be able to compared with what is stored in the table
 
-                html_calib_datetime = datetime.strptime(
-                    html_calib_datetime, "%Y-%m-%d %H:%M"
-                ).strftime("%Y-%m-%d %H:%M")
+                # The table stores datetime as UTC, while the html table shows local time with timezone set at the station.
+                # To compare the two we need to compare using UTC for both
+                # The row strings in the html contains a timezone string like CET, CEST which is not standard and harder to convert reliably
+                # The header row does seem to contain the timezone string in a more standard format
+                html_calib_datetime, html_calib_datetime_tz = parse_dt_with_tz(html_calib_datetime)
+                html_calib_datetime_utc = pd.to_datetime(html_calib_datetime).tz_localize(tz_name_station).tz_convert("UTC").strftime("%Y-%m-%d %H:%M")
 
                 table_calib_datetime = calibrations.loc[i_row, "Date of Calibration"][
                     : len(html_calib_datetime)
                 ]
 
-                if html_calib_datetime == table_calib_datetime:
+                if html_calib_datetime_utc == table_calib_datetime:
                     calibrations.loc[i_row, "ID"] = calibration_id
                 else:
                     raise Exception(
@@ -234,3 +240,15 @@ def get_station_groups(s, header_station_measurements, measurements):
     # group_df = pd.read_csv(BytesIO(group_csv_data.content), skiprows=2)
 
     return group_csv_data
+
+
+def parse_dt_with_tz(s: str):
+    """
+    Parses strings like '2026-01-01 12:49 UTC' or '2026-01-01 12:49 CET'.
+    Returns (naive_datetime_string, tz_string).
+    """
+    # Split into date/time part and timezone part by last whitespace
+    dt_part, tz_str = s.rsplit(" ", 1)
+    naive_dt_str = datetime.strptime(dt_part, "%Y-%m-%d %H:%M").strftime("%Y-%m-%d %H:%M")
+
+    return naive_dt_str, tz_str

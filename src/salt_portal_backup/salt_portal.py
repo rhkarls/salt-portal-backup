@@ -38,7 +38,7 @@ from .web_scraping import (
     login_salt_portal,
 )
 
-SUPPORTED_SP_VERSION = "1.0.2"
+SUPPORTED_SP_VERSION = "1.5.0"
 
 DESC_WIDTH = 34
 
