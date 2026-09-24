@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "salt-portal-backup"
-version = "0.2.1"
+version = "0.2.2"
 description = 'Backup projects, stations, calibrations and measurements from Salt Portal to a SQLite database.'
 readme = "README.md"
 requires-python = ">=3.11"
@@ -31,7 +31,7 @@ dependencies = [
     "numpy>=2.4.0",
     "requests>=2.32.3",
     "click>=8.3.0",
-    "tqdm>=4.67.1"
+    "tqdm>=4.67.1",
 ]
 
 [project.urls]
@@ -79,5 +79,6 @@ dev = [
     "pyinstaller>=6.19.0",
     "ruff>=0.15.11",
     "twine>=6.2.0",
-    "pyrefly>=0.60.0"
+    "pyrefly>=0.60.0",
+    "pandas-stubs~=3.0.5",
 ]
